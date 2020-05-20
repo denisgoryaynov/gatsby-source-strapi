@@ -16,16 +16,6 @@ var _createNodeHelpers = (0, _gatsbyNodeHelpers2.default)({
 }),
     createNodeFactory = _createNodeHelpers.createNodeFactory;
 
-/**
- * Node factory with `type` option based on
- * original `createNodeFactory`.
- *
- * @param {string} type - Node type
- * @param {object} node - Node
- * @constructor
- */
-
-
 var Node = exports.Node = function Node(type, node) {
   return createNodeFactory(type, function (node) {
     node.id = type + '_' + node.strapiId;

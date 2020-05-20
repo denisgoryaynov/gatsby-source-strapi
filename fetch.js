@@ -24,20 +24,21 @@ module.exports = function () {
   var _ref = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee(_ref2) {
     var apiURL = _ref2.apiURL,
         contentType = _ref2.contentType,
+        singleType = _ref2.singleType,
         jwtToken = _ref2.jwtToken,
         queryLimit = _ref2.queryLimit,
         reporter = _ref2.reporter;
-    var apiBase, apiEndpoint, fetchRequestConfig, documents;
+    var apiBase, apiEndpoint, fetchRequestConfig, documents, response;
     return _regenerator2.default.wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
             // Define API endpoint.
-            apiBase = apiURL + '/' + (0, _pluralize2.default)(contentType);
+            apiBase = singleType ? apiURL + '/' + singleType : apiURL + '/' + (0, _pluralize2.default)(contentType);
             apiEndpoint = apiBase + '?_limit=' + queryLimit;
 
 
-            reporter.info('Starting to fetch data from Strapi - ' + apiBase);
+            reporter.info('Starting to fetch data from Strapi - ' + apiEndpoint);
 
             // Set authorization token
             fetchRequestConfig = {};
@@ -54,11 +55,18 @@ module.exports = function () {
 
           case 7:
             documents = _context.sent;
-            return _context.abrupt('return', documents.data.map(function (item) {
+
+
+            // Make sure response is an array for single type instances
+            response = Array.isArray(documents.data) ? documents.data : [documents.data];
+
+            // Map and clean data.
+
+            return _context.abrupt('return', response.map(function (item) {
               return clean(item);
             }));
 
-          case 9:
+          case 10:
           case 'end':
             return _context.stop();
         }

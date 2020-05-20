@@ -4,6 +4,10 @@ var _regenerator = require('babel-runtime/regenerator');
 
 var _regenerator2 = _interopRequireDefault(_regenerator);
 
+var _toConsumableArray2 = require('babel-runtime/helpers/toConsumableArray');
+
+var _toConsumableArray3 = _interopRequireDefault(_toConsumableArray2);
+
 var _promise = require('babel-runtime/core-js/promise');
 
 var _promise2 = _interopRequireDefault(_promise);
@@ -28,77 +32,53 @@ var _normalize = require('./normalize');
 
 var _normalize2 = _interopRequireDefault(_normalize);
 
+var _authentication = require('./authentication');
+
+var _authentication2 = _interopRequireDefault(_authentication);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.sourceNodes = function () {
   var _ref = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee(_ref2, _ref3) {
     var store = _ref2.store,
-        boundActionCreators = _ref2.boundActionCreators,
+        actions = _ref2.actions,
         cache = _ref2.cache,
-        reporter = _ref2.reporter;
+        reporter = _ref2.reporter,
+        getNode = _ref2.getNode,
+        getNodes = _ref2.getNodes;
     var _ref3$apiURL = _ref3.apiURL,
         apiURL = _ref3$apiURL === undefined ? 'http://localhost:1337' : _ref3$apiURL,
         _ref3$contentTypes = _ref3.contentTypes,
         contentTypes = _ref3$contentTypes === undefined ? [] : _ref3$contentTypes,
+        _ref3$singleTypes = _ref3.singleTypes,
+        singleTypes = _ref3$singleTypes === undefined ? [] : _ref3$singleTypes,
         _ref3$loginData = _ref3.loginData,
         loginData = _ref3$loginData === undefined ? {} : _ref3$loginData,
         _ref3$queryLimit = _ref3.queryLimit,
         queryLimit = _ref3$queryLimit === undefined ? 100 : _ref3$queryLimit;
-    var createNode, touchNode, jwtToken, authenticationActivity, loginEndpoint, loginResponse, fetchActivity, promises, entities;
+    var createNode, deleteNode, touchNode, jwtToken, fetchActivity, contentTypePromises, singleTypePromises, entities, newNodes, existingNodes, diff;
     return _regenerator2.default.wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
-            createNode = boundActionCreators.createNode, touchNode = boundActionCreators.touchNode;
-            jwtToken = null;
+            createNode = actions.createNode, deleteNode = actions.deleteNode, touchNode = actions.touchNode;
 
-            // Check if loginData is set.
+            // Authentication function
 
-            if (!(loginData.hasOwnProperty('identifier') && loginData.identifier.length !== 0 && loginData.hasOwnProperty('password') && loginData.password.length !== 0)) {
-              _context.next = 17;
-              break;
-            }
+            _context.next = 3;
+            return (0, _authentication2.default)({ loginData: loginData, reporter: reporter, apiURL: apiURL });
 
-            authenticationActivity = reporter.activityTimer('Authenticate Strapi User');
-
-            authenticationActivity.start();
-
-            // Define API endpoint.
-            loginEndpoint = apiURL + '/auth/local';
-
-            // Make API request.
-
-            _context.prev = 6;
-            _context.next = 9;
-            return _axios2.default.post(loginEndpoint, loginData);
-
-          case 9:
-            loginResponse = _context.sent;
+          case 3:
+            jwtToken = _context.sent;
 
 
-            if (loginResponse.hasOwnProperty('data')) {
-              jwtToken = loginResponse.data.jwt;
-            }
-            _context.next = 16;
-            break;
-
-          case 13:
-            _context.prev = 13;
-            _context.t0 = _context['catch'](6);
-
-            reporter.panic('Strapi authentication error: ' + _context.t0);
-
-          case 16:
-
-            authenticationActivity.end();
-
-          case 17:
+            // Start activity, Strapi data fetching
             fetchActivity = reporter.activityTimer('Fetched Strapi Data');
 
             fetchActivity.start();
 
             // Generate a list of promises based on the `contentTypes` option.
-            promises = contentTypes.map(function (contentType) {
+            contentTypePromises = contentTypes.map(function (contentType) {
               return (0, _fetch2.default)({
                 apiURL: apiURL,
                 contentType: contentType,
@@ -108,14 +88,26 @@ exports.sourceNodes = function () {
               });
             });
 
-            // Execute the promises.
+            // Generate a list of promises based on the `singleTypes` option.
 
-            _context.next = 22;
-            return _promise2.default.all(promises);
+            singleTypePromises = singleTypes.map(function (singleType) {
+              return (0, _fetch2.default)({
+                apiURL: apiURL,
+                singleType: singleType,
+                jwtToken: jwtToken,
+                queryLimit: queryLimit,
+                reporter: reporter
+              });
+            });
 
-          case 22:
+            // Execute the promises
+
+            _context.next = 10;
+            return _promise2.default.all([].concat((0, _toConsumableArray3.default)(contentTypePromises), (0, _toConsumableArray3.default)(singleTypePromises)));
+
+          case 10:
             entities = _context.sent;
-            _context.next = 25;
+            _context.next = 13;
             return _normalize2.default.downloadMediaFiles({
               entities: entities,
               apiURL: apiURL,
@@ -126,26 +118,61 @@ exports.sourceNodes = function () {
               jwtToken: jwtToken
             });
 
-          case 25:
+          case 13:
             entities = _context.sent;
 
 
-            contentTypes.forEach(function (contentType, i) {
+            // new created nodes
+            newNodes = [];
+
+            // Fetch existing strapi nodes
+
+            existingNodes = getNodes().filter(function (n) {
+              return n.internal.owner === 'gatsby-source-strapi';
+            });
+
+            // Touch each one of them
+
+            existingNodes.forEach(function (n) {
+              touchNode({ nodeId: n.id });
+            });
+
+            // Merge single and content types and retrieve create nodes
+            contentTypes.concat(singleTypes).forEach(function (contentType, i) {
               var items = entities[i];
               items.forEach(function (item, i) {
                 var node = (0, _nodes.Node)((0, _lodash.capitalize)(contentType), item);
+                // Adding new created nodes in an Array
+                newNodes.push(node);
+
+                // Create nodes
                 createNode(node);
               });
             });
 
+            // Make a diff array between existing nodes and new ones
+            diff = existingNodes.filter(function (_ref4) {
+              var id1 = _ref4.id;
+              return !newNodes.some(function (_ref5) {
+                var id2 = _ref5.id;
+                return id2 === id1;
+              });
+            });
+
+            // Delete diff nodes
+
+            diff.forEach(function (data) {
+              deleteNode({ node: getNode(data.id) });
+            });
+
             fetchActivity.end();
 
-          case 28:
+          case 21:
           case 'end':
             return _context.stop();
         }
       }
-    }, _callee, undefined, [[6, 13]]);
+    }, _callee, undefined);
   }));
 
   return function (_x, _x2) {
