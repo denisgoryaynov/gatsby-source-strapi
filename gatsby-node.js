@@ -40,12 +40,13 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 exports.sourceNodes = function () {
   var _ref = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee(_ref2, _ref3) {
-    var store = _ref2.store,
-        actions = _ref2.actions,
+    var actions = _ref2.actions,
         cache = _ref2.cache,
-        reporter = _ref2.reporter,
+        createNodeId = _ref2.createNodeId,
         getNode = _ref2.getNode,
-        getNodes = _ref2.getNodes;
+        getNodes = _ref2.getNodes,
+        reporter = _ref2.reporter,
+        store = _ref2.store;
     var _ref3$apiURL = _ref3.apiURL,
         apiURL = _ref3$apiURL === undefined ? 'http://localhost:1337' : _ref3$apiURL,
         _ref3$contentTypes = _ref3.contentTypes,
@@ -114,6 +115,7 @@ exports.sourceNodes = function () {
               store: store,
               cache: cache,
               createNode: createNode,
+              createNodeId: createNodeId,
               touchNode: touchNode,
               jwtToken: jwtToken
             });

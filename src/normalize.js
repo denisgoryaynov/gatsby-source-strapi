@@ -47,7 +47,9 @@ const extractFields = async (
           cache,
           createNode,
           createNodeId,
-          auth
+          auth,
+          name: item.hash,
+          ext: item.ext,
         })
 
         // If we don't have cached data, download the file

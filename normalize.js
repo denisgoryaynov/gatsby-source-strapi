@@ -85,7 +85,9 @@ var extractFields = function () {
               cache: cache,
               createNode: createNode,
               createNodeId: createNodeId,
-              auth: auth
+              auth: auth,
+              name: item.hash,
+              ext: item.ext
             });
 
           case 13:
