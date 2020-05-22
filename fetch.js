@@ -89,6 +89,7 @@ var clean = function clean(item) {
   (0, _lodash.forEach)(item, function (value, key) {
     if ((0, _lodash.startsWith)(key, '__')) {
       delete item[key];
+      item['strapi' + key] = value;
     } else if ((0, _lodash.startsWith)(key, '_')) {
       delete item[key];
       item[key.slice(1)] = value;
