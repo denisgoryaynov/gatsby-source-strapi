@@ -28,7 +28,9 @@ module.exports = function () {
         jwtToken = _ref2.jwtToken,
         queryLimit = _ref2.queryLimit,
         reporter = _ref2.reporter;
-    var apiBase, apiEndpoint, fetchRequestConfig, documents, response;
+
+    var apiBase, apiEndpoint, _ref3, data;
+
     return _regenerator2.default.wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
@@ -40,38 +42,27 @@ module.exports = function () {
 
             reporter.info('Starting to fetch data from Strapi - ' + apiEndpoint);
 
-            // Set authorization token
-            fetchRequestConfig = {};
+            _context.prev = 3;
+            _context.next = 6;
+            return (0, _axios2.default)(apiEndpoint, addAuthorizationHeader({}, jwtToken));
 
-            if (jwtToken !== null) {
-              fetchRequestConfig.headers = {
-                Authorization: 'Bearer ' + jwtToken
-              };
-            }
+          case 6:
+            _ref3 = _context.sent;
+            data = _ref3.data;
+            return _context.abrupt('return', (0, _lodash.castArray)(data).map(clean));
 
-            // Make API request.
-            _context.next = 7;
-            return (0, _axios2.default)(apiEndpoint, fetchRequestConfig);
+          case 11:
+            _context.prev = 11;
+            _context.t0 = _context['catch'](3);
 
-          case 7:
-            documents = _context.sent;
+            reporter.panic('Failed to fetch data from Strapi', _context.t0);
 
-
-            // Make sure response is an array for single type instances
-            response = Array.isArray(documents.data) ? documents.data : [documents.data];
-
-            // Map and clean data.
-
-            return _context.abrupt('return', response.map(function (item) {
-              return clean(item);
-            }));
-
-          case 10:
+          case 14:
           case 'end':
             return _context.stop();
         }
       }
-    }, _callee, undefined);
+    }, _callee, undefined, [[3, 11]]);
   }));
 
   return function (_x) {
@@ -99,4 +90,12 @@ var clean = function clean(item) {
   });
 
   return item;
+};
+
+var addAuthorizationHeader = function addAuthorizationHeader(options, token) {
+  if (token) {
+    (0, _lodash.set)(options, 'headers.Authorization', 'Bearer ' + token);
+  }
+
+  return options;
 };

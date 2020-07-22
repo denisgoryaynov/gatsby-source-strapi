@@ -8,6 +8,8 @@ var _asyncToGenerator2 = require('babel-runtime/helpers/asyncToGenerator');
 
 var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
 
+var _fp = require('lodash/fp');
+
 var _axios = require('axios');
 
 var _axios2 = _interopRequireDefault(_axios);
@@ -19,17 +21,16 @@ module.exports = function () {
     var loginData = _ref2.loginData,
         reporter = _ref2.reporter,
         apiURL = _ref2.apiURL;
-    var jwtToken, authenticationActivity, loginEndpoint, loginResponse;
+    var validIndentifier, validPassword, authenticationActivity, loginResponse;
     return _regenerator2.default.wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
-            jwtToken = null;
+            validIndentifier = (0, _fp.has)('identifier', loginData) && loginData.identifier.length !== 0;
+            validPassword = (0, _fp.has)('password', loginData) && loginData.password.length !== 0;
 
-            // Check if loginData is set.
-
-            if (!(loginData.hasOwnProperty('identifier') && loginData.identifier.length !== 0 && loginData.hasOwnProperty('password') && loginData.password.length !== 0)) {
-              _context.next = 16;
+            if (!(validIndentifier && validPassword)) {
+              _context.next = 17;
               break;
             }
 
@@ -37,43 +38,43 @@ module.exports = function () {
 
             authenticationActivity.start();
 
-            // Define API endpoint.
-            loginEndpoint = apiURL + '/auth/local';
-
             // Make API request.
-
             _context.prev = 5;
             _context.next = 8;
-            return _axios2.default.post(loginEndpoint, loginData);
+            return _axios2.default.post(apiURL + '/auth/local', loginData);
 
           case 8:
             loginResponse = _context.sent;
 
 
-            if (loginResponse.hasOwnProperty('data')) {
-              jwtToken = loginResponse.data.jwt;
+            authenticationActivity.end();
+
+            if (!(0, _fp.has)('data', loginResponse)) {
+              _context.next = 12;
+              break;
             }
-            _context.next = 15;
-            break;
+
+            return _context.abrupt('return', loginResponse.data.jwt);
 
           case 12:
-            _context.prev = 12;
+            _context.next = 17;
+            break;
+
+          case 14:
+            _context.prev = 14;
             _context.t0 = _context['catch'](5);
 
             reporter.panic('Strapi authentication error: ' + _context.t0);
 
-          case 15:
-            authenticationActivity.end();
-
-          case 16:
-            return _context.abrupt('return', jwtToken);
-
           case 17:
+            return _context.abrupt('return', null);
+
+          case 18:
           case 'end':
             return _context.stop();
         }
       }
-    }, _callee, undefined, [[5, 12]]);
+    }, _callee, undefined, [[5, 14]]);
   }));
 
   return function (_x) {

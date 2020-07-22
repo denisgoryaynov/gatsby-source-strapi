@@ -16,10 +16,6 @@ var _asyncToGenerator2 = require('babel-runtime/helpers/asyncToGenerator');
 
 var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
 
-var _axios = require('axios');
-
-var _axios2 = _interopRequireDefault(_axios);
-
 var _fetch = require('./fetch');
 
 var _fetch2 = _interopRequireDefault(_fetch);
@@ -142,7 +138,7 @@ exports.sourceNodes = function () {
             // Merge single and content types and retrieve create nodes
             contentTypes.concat(singleTypes).forEach(function (contentType, i) {
               var items = entities[i];
-              items.forEach(function (item, i) {
+              items.forEach(function (item) {
                 var node = (0, _nodes.Node)((0, _lodash.capitalize)(contentType), item);
                 // Adding new created nodes in an Array
                 newNodes.push(node);
