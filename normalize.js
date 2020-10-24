@@ -51,7 +51,7 @@ var extractFields = function () {
             fileNodeID = void 0;
             // using field on the cache key for multiple image field
 
-            mediaDataCacheKey = 'strapi-media-' + item.id;
+            mediaDataCacheKey = 'strapi-media-' + item.hash;
             _context.next = 5;
             return cache.get(mediaDataCacheKey);
 

@@ -78,12 +78,17 @@ module.exports = function () {
  */
 var clean = function clean(item) {
   (0, _lodash.forEach)(item, function (value, key) {
-    if ((0, _lodash.startsWith)(key, '__')) {
+    if (key === '__v') {
+      // Remove mongo's __v
       delete item[key];
-      item['strapi' + key] = value;
-    } else if ((0, _lodash.startsWith)(key, '_')) {
+    } else if (key === '_id') {
+      // Rename mongo's "_id" key to "id".
       delete item[key];
-      item[key.slice(1)] = value;
+      item.id = value;
+    } else if ((0, _lodash.startsWith)(key, '__')) {
+      // Gatsby reserves double-underscore prefixes – replace prefix with "strapi"
+      delete item[key];
+      item['strapi_' + key.slice(2)] = value;
     } else if ((0, _lodash.isObject)(value)) {
       item[key] = clean(value);
     }
